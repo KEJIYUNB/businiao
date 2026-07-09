@@ -35,11 +35,6 @@
     <img src="img/setting.png" width="300">
 </details>
 
-## ❤️赞助者
-
-| [<img src="https://github.com/Jie0746.png" width="64px;"/><br>@Jie0746<br>(ByChum)](https://github.com/Jie0746) |
-| :--: |
-
 ## 画饼
 
   - [x] 配置默认MaxAdj
@@ -52,8 +47,9 @@
 
 ## 打赏
 
-<details>
-    <summary>点击展开二维码</summary>
-    <img src="img/wechat.png" width="300">
-    <img src="img/alipay.jpg" width="300">
-</details>
+<img src="img/wechat.png" width="300">
+<img src="img/alipay.jpg" width="300">
+
+## ❤️赞助者
+
+- [Jie0746](https://github.com/Jie0746)
