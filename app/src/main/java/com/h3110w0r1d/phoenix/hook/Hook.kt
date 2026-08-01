@@ -20,7 +20,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 @Keep
 class Hook : IXposedHookLoadPackage {
-    private companion object {
+    companion object {
         private const val PACKAGE_NAME = BuildConfig.APPLICATION_ID
 
         /** 与 AOSP ProcessList.UNKNOWN_ADJ 常见取值一致，反射失败时使用 */
@@ -29,6 +29,10 @@ class Hook : IXposedHookLoadPackage {
         private var androidClassLoader: ClassLoader? = null
         private var lastManagedConfigKeys: Set<String> = emptySet()
         private var cachedDefaultMaxAdj: Int? = null
+
+        /** 系统启动完成标志，防止早期 Hook 导致 bootloop */
+        @Volatile
+        var isBootCompleted = false
 
         private val ignoreCallAddToStopping =
             setOf(
@@ -354,11 +358,25 @@ class Hook : IXposedHookLoadPackage {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     amsInstance = param.thisObject
                     XposedBridge.log("ActivityManagerService 实例已捕获: $amsInstance")
+                    // 不在此处调用 applyKeepAliveFromModuleConfigQ()
+                    // 延迟到 finishBooting 后执行，避免干扰系统启动流程
+                }
+            },
+        )
+        // 在 finishBooting 后设置 isBootCompleted 并应用保活配置
+        XposedBridge.hookAllMethods(
+            clazz,
+            "finishBooting",
+            object : XC_MethodHook() {
+                @Throws(Throwable::class)
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    isBootCompleted = true
+                    XposedBridge.log("finishBooting completed, Phoenix is now active")
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         try {
                             applyKeepAliveFromModuleConfigQ()
                         } catch (e: Throwable) {
-                            XposedBridge.log("applyKeepAlive after AMS init failed: $e")
+                            XposedBridge.log("applyKeepAlive after finishBooting failed: $e")
                         }
                     }
                 }

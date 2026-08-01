@@ -58,6 +58,8 @@ object ConfigServer : XC_MethodHook() {
         }
 
     override fun beforeHookedMethod(param: MethodHookParam) {
+        // 系统启动未完成前直接放行所有调用，避免干扰存储解锁等关键流程
+        if (!com.h3110w0r1d.phoenix.hook.Hook.isBootCompleted) return
         val firstArg = param.args.first()?.toString() ?: return
         if (!firstArg.contains(":")) return
         val callingUid = Binder.getCallingUid()
